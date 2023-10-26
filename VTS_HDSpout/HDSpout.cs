@@ -15,7 +15,7 @@ namespace VTS_HDSpout
     {
         public const string GUID = "me.xiaoye97.plugin.VTubeStudio.VTS_HDSpout";
         public const string PluginName = "VTS_HDSpout";
-        public const string VERSION = "1.0.0";
+        public const string VERSION = "1.1.0";
         private CircleButtonController CircleButtonController;
         private RectTransform CircleButtonControllerRT;
         private static Camera live2dCamera;
@@ -70,7 +70,6 @@ namespace VTS_HDSpout
                 GUILayout.Space(250);
                 GUILayout.BeginHorizontal("VTS_HDSpout", GUI.skin.window);
                 sizeSettingIndex = GUILayout.SelectionGrid(sizeSettingIndex, sizeStrings, sizeStrings.Length);
-
                 GUILayout.EndHorizontal();
                 GUILayout.EndHorizontal();
             }
@@ -79,7 +78,16 @@ namespace VTS_HDSpout
         [HarmonyPrefix, HarmonyPatch(typeof(SpoutSender), "Update")]
         public static bool SpoutSender_Update_Prefix(SpoutSender __instance)
         {
-            if (sizeSettingIndex == 0) return true;
+            if (live2dCamera == null)
+            {
+                live2dCamera = GameObject.Find("Cameras/Live2D Camera").GetComponent<Camera>();
+            }
+            if (sizeSettingIndex == 0)
+            {
+                live2dCamera.targetTexture = null;
+                cacheRT = null;
+                return true;
+            }
             int hdwidth = (int)sizes[sizeSettingIndex].width;
             int hdheight = (int)sizes[sizeSettingIndex].height;
             if (cacheRT == null || cacheRT.width != hdwidth || cacheRT.height != hdheight)
@@ -88,17 +96,9 @@ namespace VTS_HDSpout
                 Destroy(emptyRT);
                 cacheRT = new RenderTexture(hdwidth, hdheight, 0);
                 emptyRT = new RenderTexture(hdwidth, hdheight, 0);
-            }
-            if (live2dCamera == null)
-            {
-                live2dCamera = GameObject.Find("Cameras/Live2D Camera").GetComponent<Camera>();
+                live2dCamera.targetTexture = cacheRT;
             }
             var _this = __instance;
-            // 清空内容
-            Blitter.Blit(_this._resources, emptyRT, cacheRT, _this._keepAlpha);
-            live2dCamera.targetTexture = cacheRT;
-            live2dCamera.Render();
-            live2dCamera.targetTexture = null;
             _this.PrepareBuffer(cacheRT.width, cacheRT.height);
             Blitter.Blit(_this._resources, cacheRT, _this._buffer, _this._keepAlpha);
             if (_this._sender == null)
@@ -106,6 +106,8 @@ namespace VTS_HDSpout
                 _this._sender = new Sender(_this._spoutName, _this._buffer);
             }
             _this._sender.Update();
+            // 清空内容
+            Blitter.Blit(_this._resources, emptyRT, cacheRT, _this._keepAlpha);
             return false;
         }
     }

@@ -36,8 +36,8 @@
       <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\VTube Studio\BepInEx\core\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\VTube Studio\VTube Studio_Data\Managed\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp-nstrip">
+      <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\VTube Studio\RefDll\Assembly-CSharp-nstrip.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx.Core">
